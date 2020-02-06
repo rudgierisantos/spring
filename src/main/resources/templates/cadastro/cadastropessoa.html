@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="ISO-8859-1">
+<meta charset="UTF-8">
 <title>Insert title here</title>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -16,52 +16,74 @@
 
 </head>
 <body>
-
-	<h5>Cadastro de Pessoa</h5>
+	<h3>Spring Boot + Thymeleaf + Material Design Lite</h3>
+	<br />
+	<h5>Cadastro de Pessoas</h5>
 
 	<div class="row">
-		<form action="salvarpessoa" method="post" th:object="${pessoaobj}">
+		<form action="salvarpessoa" id ="formpessoa" method="post" th:object="${pessoaobj}"
+			class="col s12">
 			<div class="row">
 				<div class="input-field col s1">
-					<input id="last_name" name="id" readonly="readonly" th:field="*{id}" type="text" class="validate">
-					<label  class="active" for="last_name">ID</label>
+					<input id="last_name" name="id" readonly="readonly"
+						th:field="*{id}" type="text" class="validate" required="required"> <label
+						class="active" for="last_name">ID</label>
 				</div>
 				<div class="input-field col s3">
-					<input id="last_name" name="nome" th:field="*{nome}" type="text" class="validate">
-					<label  class="active" for="last_name">Nome</label>
+					<input id="last_name" name="nome" th:field="*{nome}" type="text"
+						class="validate" required="required"> <label class="active" for="last_name" >Nome</label>
 				</div>
 				<div class="input-field col s3">
-					<input id="last_name" name="sobrenome" th:field="*{sobrenome}" type="text" class="validate">
-					<label  class="active" for="last_name">Sobrenome</label>
+					<input id="last_name" name="sobrenome" th:field="*{sobrenome}"
+						type="text" class="validate" required="required"> <label class="active"
+						for="last_name">Sobrenome</label>
+				</div>
+
+				<div class="input-field col s3">
+					<input id="last_name" name="idade" th:field="*{idade}" type="text"
+						class="validate" required="required"> <label class="active" for="last_name">Idade</label>
 				</div>
 			</div>
 			<div class="row">
-				<div class="input-field col s3">
-					<input id="last_name" name="idade" th:field="*{idade}" type="text" class="validate">
-					<label  class="active" for="last_name">Idade</label>
+				<div class="input-field col s6">
+					<input class="waves-effect waves-light btn" type="submit"
+						value="Salvar">
+						
+						<button class="waves-effect waves-light btn" onclick="document.getElementById('formpessoa').reset();">Novo</button>
 				</div>
 			</div>
-			<input class="waves-effect waves-light btn" type="submit"
-				value="Salvar">
 		</form>
 	</div>
 
+	<form action="pesquisarpessoa" method="post">
+		<div class="row">
+			<div class="input-field col s3">
+				<input name="nomepesquisa" type="text" class="validate"> <label
+					class="active">Pesquisa por Nome</label>
+			</div>
+			<input class="waves-effect waves-light btn" type="submit"
+				value="Buscar">
+			<a class="waves-effect waves-light btn" href="/listapessoas">Listar Pessoas</a>
+		</div>
+	</form>
 
 
-
-	<a href="/listapessoas">Listar Pessoas</a>
+	<br />
+	<br />
 
 	<div class="row">
 		<div class="input-field col s6">
 			<table class="responsive-table">
+				<thead>
 				<tr>
-					<td>ID</td>
-					<td>Nome</td>
-					<td>Sobrenome</td>
-					<td>Idade</td>
-					<td>Acao</td>
-
+					<th>ID</th>
+					<th>Nome</th>
+					<th>Sobrenome</th>
+					<th>Idade</th>
+					<th>Editar</th>
+					<th>Excluir</th>
 				</tr>
+				</thead>
 				<tr th:each="pessoa : ${pessoas} ">
 					<td th:text="${pessoa.id}"></td>
 					<td th:text="${pessoa.nome}"></td>
@@ -69,6 +91,8 @@
 					<td th:text="${pessoa.idade}"></td>
 					<td><a
 						th:href="@{/editarpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Editar</a></td>
+					<td><a
+						th:href="@{/removerpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Excluir</a></td>
 				</tr>
 			</table>
 		</div>
