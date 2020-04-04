@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class PessoaController {
 	@Autowired
 	private TelefoneRepository telefoneRepository;
 
+	@Autowired
+	private ReportUtil reportUtil;
+
 	@RequestMapping(method = RequestMethod.GET, value = "/cadastropessoa")
 	public ModelAndView inicio() {
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
@@ -43,7 +48,7 @@ public class PessoaController {
 
 	@RequestMapping(method = RequestMethod.POST, value = "**/salvarpessoa")
 	public ModelAndView salvar(@Valid Pessoa pessoa, BindingResult bindingResult) {
-		
+
 		pessoa.setTelefones(telefoneRepository.getTelefones(pessoa.getId()));
 
 		if (bindingResult.hasErrors()) { // se tiver erros
@@ -109,20 +114,62 @@ public class PessoaController {
 	@PostMapping("**/pesquisarpessoa")
 	public ModelAndView pesquisar(@RequestParam("nomepesquisa") String nomepesquisa,
 			@RequestParam("pesqsexo") String pesqsexo) {
-		
+
 		List<Pessoa> pessoas = new ArrayList<Pessoa>();
-		
-		if(pesqsexo != null && !pesqsexo.isEmpty()) {
-			pessoas = pessoaRepository.findPessoaByNameSexo(nomepesquisa, pesqsexo);		
-		}else {
+
+		if (pesqsexo != null && !pesqsexo.isEmpty()) {
+			pessoas = pessoaRepository.findPessoaByNameSexo(nomepesquisa, pesqsexo);
+		} else {
 			pessoas = pessoaRepository.findPessoaByName(nomepesquisa);
 		}
-		
+
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
 		modelAndView.addObject("pessoas", pessoas);
 		modelAndView.addObject("pessoaobj", new Pessoa());
 
 		return modelAndView;
+
+	}
+
+	@GetMapping("**/pesquisarpessoa")
+	public void imprimePdf(@RequestParam("nomepesquisa") String nomepesquisa, @RequestParam("pesqsexo") String pesqsexo,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		List<Pessoa> pessoas = new ArrayList<Pessoa>();
+		if (pesqsexo != null && !pesqsexo.isEmpty() && nomepesquisa != null && !nomepesquisa.isEmpty()) {/*Busca por nome e sexo*/
+			pessoas = pessoaRepository.findPessoaByNameSexo(nomepesquisa, pesqsexo);
+
+		} else if (nomepesquisa != null && !nomepesquisa.isEmpty()) {/*Busca somente por nome*/
+			pessoas = pessoaRepository.findPessoaByName(nomepesquisa);
+
+		} 
+		 else if (pesqsexo != null && !pesqsexo.isEmpty()) {/*Busca somente por sexo*/
+				pessoas = pessoaRepository.findPessoaBySexo(pesqsexo);
+
+			}else 
+			{ /*Busca todos*/
+			Iterable<Pessoa> iterator = pessoaRepository.findAll();
+			for (Pessoa pessoa : iterator) {
+				pessoas.add(pessoa);
+			}
+		}
+		
+		/*Chama o serviço para geração do relatório*/
+		byte[] pdf = reportUtil.gerarRelatorio(pessoas, "pessoa", request.getServletContext());
+		
+		/*Tamanho da resposta*/
+		response.setContentLength(pdf.length);
+		
+		/*Definir na resposta o tipo de arquivo*/
+		response.setContentType("application/octet-stream");
+		
+		/*Definir o cabeçalho da resposta*/
+		String headerKey = "Content-Disposition";
+		String headerValue = String.format("attachment; filename=\"%s\"", "relatorio.pdf");
+		response.setHeader(headerKey, headerValue);
+		
+		/*Finaliza a resposta para o navegador*/
+		response.getOutputStream().write(pdf); 
 
 	}
 
@@ -146,24 +193,23 @@ public class PessoaController {
 		if (bindingResult.hasErrors()) { // se tiver erros
 			Pessoa pessoa = pessoaRepository.findById(pessoaid).get();
 
-			if (telefone != null && telefone.getNumero().isEmpty()
-					|| telefone.getTipo().isEmpty()){
-				
+			if (telefone != null && telefone.getNumero().isEmpty() || telefone.getTipo().isEmpty()) {
+
 				ModelAndView modelAndView = new ModelAndView("cadastro/telefones");
 				modelAndView.addObject("pessoaobj", pessoa);
 				modelAndView.addObject("telefones", telefoneRepository.getTelefones(pessoaid));
-				
-				List<String > msg = new ArrayList<String>();
-				
-				if(telefone.getNumero().isEmpty()) {
-				msg.add("Numero deve ser informado");
+
+				List<String> msg = new ArrayList<String>();
+
+				if (telefone.getNumero().isEmpty()) {
+					msg.add("Numero deve ser informado");
 				}
-				
-				if(telefone.getTipo().isEmpty()) {
+
+				if (telefone.getTipo().isEmpty()) {
 					msg.add("Tipo deve ser informado");
 				}
 				modelAndView.addObject("msg", msg);
-				
+
 				return modelAndView;
 
 			}
