@@ -1,5 +1,6 @@
 package curso.springboot.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import curso.springboot.model.Pessoa;
@@ -51,8 +53,10 @@ public class PessoaController {
 		return modelAndView;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, value = "**/salvarpessoa")
-	public ModelAndView salvar(@Valid Pessoa pessoa, BindingResult bindingResult) {
+	@RequestMapping(method = RequestMethod.POST, 
+			value = "**/salvarpessoa",consumes = {"multipart/form-data"})
+	public ModelAndView salvar(@Valid Pessoa pessoa, 
+			BindingResult bindingResult,final MultipartFile file) throws IOException {
 
 		pessoa.setTelefones(telefoneRepository.getTelefones(pessoa.getId()));
 
@@ -70,6 +74,21 @@ public class PessoaController {
 
 			modelAndView.addObject("msg", msg);
 			return modelAndView;
+		}
+		
+		if(file.getSize() > 0) { //Cadastrando um currículo
+			pessoa.setCurriculo(file.getBytes());
+			pessoa.setTipoFileCurriculo(file.getContentType());
+			pessoa.setNomeFileCurriculo(file.getOriginalFilename());
+		}else {
+			if(pessoa.getId() != null && pessoa.getId() > 0) {//editando
+				
+				Pessoa pessoaTemp = pessoaRepository.findById(pessoa.getId()).get();
+				
+				pessoa.setCurriculo(pessoaTemp.getCurriculo());
+				pessoa.setTipoFileCurriculo(pessoaTemp.getTipoFileCurriculo());
+				pessoa.setNomeFileCurriculo(pessoaTemp.getNomeFileCurriculo());
+			}
 		}
 
 		pessoaRepository.save(pessoa);
@@ -116,6 +135,7 @@ public class PessoaController {
 		return modelAndView;
 
 	}
+		
 
 	@PostMapping("**/pesquisarpessoa")
 	public ModelAndView pesquisar(@RequestParam("nomepesquisa") String nomepesquisa,
@@ -136,6 +156,35 @@ public class PessoaController {
 		return modelAndView;
 
 	}
+	
+	@GetMapping("**/baixarcurriculo/{idpessoa}")
+	public void baixarcurriculo(@PathVariable("idpessoa") Long idpessoa,
+			HttpServletResponse response) throws IOException {
+		
+		//Consultar o objeto pessoa no banco de dados
+		Pessoa pessoa = pessoaRepository.findById(idpessoa).get();
+		if(pessoa.getCurriculo() != null) {
+			
+		//Setar tamanho da resposta
+			response.setContentLength(pessoa.getCurriculo().length);
+			
+		//Tipo do arquivo para Download	ou pode ser generica application/octet-stream
+			response.setContentType(pessoa.getTipoFileCurriculo());
+			
+		//Define o cabeçalho da resposta
+			String headerKey = "Content-Disposition";
+			String headerValue = String.format("attachment; filename=\"%s\"", pessoa.getNomeFileCurriculo());
+			response.setHeader(headerKey, headerValue);
+			
+		//Finaliza a respostat passando o arquivo
+			response.getOutputStream().write(pessoa.getCurriculo());
+			
+		}
+		
+	}
+	
+	
+	
 
 	@GetMapping("**/pesquisarpessoa")
 	public void imprimePdf(@RequestParam("nomepesquisa") String nomepesquisa, @RequestParam("pesqsexo") String pesqsexo,

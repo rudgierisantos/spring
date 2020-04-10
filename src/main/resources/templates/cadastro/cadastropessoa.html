@@ -11,6 +11,12 @@
 	integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
 	crossorigin="anonymous"></script>
 
+<script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js"
+	type="text/javascript"></script>
+<link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css"
+	rel="stylesheet" type="text/css" />
+
+
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
 	rel="stylesheet">
 
@@ -44,7 +50,7 @@ form input[type=submit] {
 			<br />
 
 			<form action="salvarpessoa" id="formpessoa" method="post"
-				th:object="${pessoaobj}" class="col s12">
+				th:object="${pessoaobj}" class="col s12"  enctype="multipart/form-data">
 				<div class="row">
 					<div class="input-field col s1">
 						<input id="last_name" name="id" readonly="readonly"
@@ -95,35 +101,53 @@ form input[type=submit] {
 						<input id="uf" name="uf" th:field="*{uf}" type="text"
 							class="validate"> <label class="active" for="last_name">UF</label>
 					</div>
+				</div>
+
+				<div class="row" sec:authorize="hasRole('ROLE_TECNICO')">
 
 					<div class="input-field col s3">
 						<input id="ibge" name="ibge" th:field="*{ibge}" type="text"
 							class="validate"> <label class="active" for="last_name">IBGE</label>
 					</div>
 
-					<div class="row" sec:authorize="hasRole('ROLE_TECNICO')">
-						<div class="input-field col s3">
-							<input id="last_name" name="idade" th:field="*{idade}"
-								type="text" class="validate"> <label class="active"
-								for="last_name">Idade</label>
-						</div>
+					<div class="input-field col s2">
+						<input id="last_name" name="idade" th:field="*{idade}" type="text"
+							class="validate"> <label class="active" for="last_name">Idade</label>
+					</div>
 
-						<div class="input-field col s2">
-							<label class="active" for="profissao">Profissão</label> <select
-								class="browser-default" th:field="*{profissao}" id="profissao">
-								<option th:each = "p : ${profissoes}" th:value="${p.id}" th:text="${p.nome}">
-							</select>
-						</div>
-						
-						<div class="input-field col s2">
-							<label class="active" for="cargo">Cargo</label> <select
-								class="browser-default" th:field="*{cargo}" id="cargo">
-								<option th:each = "c : ${T(curso.springboot.model.Cargo).values()}" th:value="${c.valor}" th:text="${c.nome}">
-							</select>
-						</div>
-						
+					<div class="input-field col s2">
+						<label class="active" for="profissao">Profissão</label> <select
+							class="browser-default" th:field="*{profissao}" id="profissao">
+							<option th:each="p : ${profissoes}" th:value="${p.id}"
+								th:text="${p.nome}">
+						</select>
+					</div>
+
+					<div class="input-field col s2">
+						<label class="active" for="cargo">Cargo</label> <select
+							class="browser-default" th:field="*{cargo}" id="cargo">
+							<option th:each="c : ${T(curso.springboot.model.Cargo).values()}"
+								th:value="${c.valor}" th:text="${c.nome}">
+						</select>
+					</div>
+					<div class="input-field col s2">
+						<label class="active" for="dataNascimento">Data
+							Nascimento:</label> <input type="date" id="dataNascimento"
+							th:field="*{dataNascimento}" name="dataNascimento"
+							placeholder="Data Nasc.">
+					</div>
+
+
+				</div>
+				<div class="row">
+					<div class="input-field col s2">
+					<label class="active" for="file">Currículo</label>
+						<input id="file" name="file"  type="file"
+							class="file-field input-field"> 
 					</div>
 				</div>
+
+
 				<div class="row">
 					<div class="input-field col s6">
 						<input class="waves-effect waves-light btn" type="submit"
@@ -179,7 +203,7 @@ form input[type=submit] {
 							<th>ID</th>
 							<th>Nome</th>
 							<th>Sobrenome</th>
-							<th>Idade</th>
+							<th>Currículo</th>
 							<th>Editar</th>
 							<th>Excluir</th>
 						</tr>
@@ -190,7 +214,8 @@ form input[type=submit] {
 							th:href="@{/telefones/{idpessoa}(idpessoa=${pessoa.id})}"><span
 								th:text="${pessoa.nome}"></span></a></td>
 						<td th:text="${pessoa.sobrenome}"></td>
-						<td th:text="${pessoa.idade}"></td>
+						<td><a
+							th:href="@{/baixarcurriculo/{idpessoa}(idpessoa=${pessoa.id})}">Download</a></td>
 						<td><a
 							th:href="@{/editarpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Editar</a></td>
 						<td><a
@@ -209,6 +234,11 @@ form input[type=submit] {
 		$(document)
 				.ready(
 						function() {
+
+							$('#dataNascimento').datepicker({
+								showOthermonths : true,
+								format : 'yyyy-mm-dd'
+							});
 
 							function limpa_formulário_cep() {
 								// Limpa valores do formulário de cep.
