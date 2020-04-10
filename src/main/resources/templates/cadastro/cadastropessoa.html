@@ -107,6 +107,21 @@ form input[type=submit] {
 								type="text" class="validate"> <label class="active"
 								for="last_name">Idade</label>
 						</div>
+
+						<div class="input-field col s2">
+							<label class="active" for="profissao">Profissão</label> <select
+								class="browser-default" th:field="*{profissao}" id="profissao">
+								<option th:each = "p : ${profissoes}" th:value="${p.id}" th:text="${p.nome}">
+							</select>
+						</div>
+						
+						<div class="input-field col s2">
+							<label class="active" for="cargo">Cargo</label> <select
+								class="browser-default" th:field="*{cargo}" id="cargo">
+								<option th:each = "c : ${T(curso.springboot.model.Cargo).values()}" th:value="${c.valor}" th:text="${c.nome}">
+							</select>
+						</div>
+						
 					</div>
 				</div>
 				<div class="row">
@@ -140,10 +155,11 @@ form input[type=submit] {
 
 				<div class="input-field col s6">
 					<input class="waves-effect waves-light btn" type="submit"
-						value="PDF" onclick="document.getElementById('pesquisarpessoa').method = 'get'"> <input
-						class="waves-effect waves-light btn" type="submit" value="Buscar">
-					<a class="waves-effect waves-light btn" href="/listapessoas">Listar
-						Pessoas</a>
+						value="PDF"
+						onclick="document.getElementById('pesquisarpessoa').method = 'get'">
+					<input class="waves-effect waves-light btn" type="submit"
+						value="Buscar"> <a class="waves-effect waves-light btn"
+						href="/listapessoas">Listar Pessoas</a>
 				</div>
 			</form>
 		</div>
