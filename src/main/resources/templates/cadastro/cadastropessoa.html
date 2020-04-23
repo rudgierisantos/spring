@@ -30,6 +30,18 @@
 form input[type=submit] {
 	color: white;
 }
+
+table{
+width: 100%;
+}
+
+table td, table th {
+border: 1px solid grey;
+}
+
+table th{
+background: #eee;
+}
 </style>
 
 </head>
@@ -165,7 +177,8 @@ form input[type=submit] {
 		<div class="row">
 			<form action="pesquisarpessoa" method="post" id="pesquisarpessoa">
 				<div class="input-field col s3">
-					<input name="nomepesquisa" type="text" class="validate"> <label
+					<input name="nomepesquisa" type="text" class="validate"
+					th:value="${nomepesquisa}"> <label
 						class="active">Pesquisa por Nome</label>
 				</div>
 
@@ -196,7 +209,7 @@ form input[type=submit] {
 	<fieldset>
 		<legend>Lista de Pessoas</legend>
 		<div class="row">
-			<div class="input-field col s6">
+			<div class="input-field col s12">
 				<table class="responsive-table">
 					<thead>
 						<tr>
@@ -208,7 +221,7 @@ form input[type=submit] {
 							<th>Excluir</th>
 						</tr>
 					</thead>
-					<tr th:each="pessoa : ${pessoas} ">
+					<tr th:each="pessoa : ${pessoas.content} ">
 						<td th:text="${pessoa.id}"></td>
 						<td><a
 							th:href="@{/telefones/{idpessoa}(idpessoa=${pessoa.id})}"><span
@@ -223,6 +236,26 @@ form input[type=submit] {
 							th:href="@{/removerpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Excluir</a></td>
 					</tr>
 				</table>
+				
+				<div class="row" style="margin-top: 30px;">
+				<center>
+				
+				<span th:if="${pessoas.hasPrevious()}">
+				<a th:href = "@{/pessoaspag(page=${pessoas.number-1}, size=${pessoas.size}, nomepesquisa=${nomepesquisa})}">Anterior</a>
+				</span>
+				
+				<th:block th:each="i: ${#numbers.sequence(0, pessoas.totalPages - 1)}">  
+						<a th:href="@{/pessoaspag(page=${i}, size=${pessoas.size},nomepesquisa=${nomepesquisa})}">[[ ${i} + 1 ]]</a>
+				</th:block>			
+				
+				<span th:if="${pessoas.hasNext()}">
+				<a th:href = "@{/pessoaspag(page=${pessoas.number+1}, size=${pessoas.size}, nomepesquisa=${nomepesquisa})}">Próximo</a>
+				</span>
+				
+				</center>
+				
+				</div>
+				
 			</div>
 		</div>
 	</fieldset>
