@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -47,8 +49,7 @@ public class PessoaController {
 	public ModelAndView inicio() {
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
 		modelAndView.addObject("pessoaobj", new Pessoa());
-		Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
-		modelAndView.addObject("pessoas", pessoasIt);
+		modelAndView.addObject("pessoas", pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome"))));
 		modelAndView.addObject("profissoes", ProfissaoRepository.findAll());
 		return modelAndView;
 	}
@@ -62,8 +63,7 @@ public class PessoaController {
 
 		if (bindingResult.hasErrors()) { // se tiver erros
 			ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
-			Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
-			modelAndView.addObject("pessoas", pessoasIt);
+			modelAndView.addObject("pessoas", pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome"))));
 			modelAndView.addObject("pessoaobj", pessoa);
 			modelAndView.addObject("profissoes", ProfissaoRepository.findAll());
 
@@ -95,8 +95,7 @@ public class PessoaController {
 
 		// Após salvar listar pessoas automaticamente
 		ModelAndView andView = new ModelAndView("cadastro/cadastropessoa");
-		Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
-		andView.addObject("pessoas", pessoasIt);
+		andView.addObject("pessoas", pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome"))));
 		andView.addObject("pessoaobj", new Pessoa());
 		andView.addObject("profissoes", ProfissaoRepository.findAll());
 		return andView;
@@ -106,8 +105,7 @@ public class PessoaController {
 	@RequestMapping(method = RequestMethod.GET, value = "/listapessoas")
 	public ModelAndView pessoas() {
 		ModelAndView andView = new ModelAndView("cadastro/cadastropessoa");
-		Iterable<Pessoa> pessoasIt = pessoaRepository.findAll();
-		andView.addObject("pessoas", pessoasIt);
+		andView.addObject("pessoas", pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome"))));
 		andView.addObject("pessoaobj", new Pessoa());
 		return andView;
 	}
@@ -129,7 +127,7 @@ public class PessoaController {
 		pessoaRepository.deleteById(idpessoa);
 
 		ModelAndView modelAndView = new ModelAndView("cadastro/cadastropessoa");
-		modelAndView.addObject("pessoas", pessoaRepository.findAll());
+		modelAndView.addObject("pessoas", pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome"))));
 		modelAndView.addObject("pessoaobj", new Pessoa());
 
 		return modelAndView;
@@ -183,9 +181,6 @@ public class PessoaController {
 		
 	}
 	
-	
-	
-
 	@GetMapping("**/pesquisarpessoa")
 	public void imprimePdf(@RequestParam("nomepesquisa") String nomepesquisa, @RequestParam("pesqsexo") String pesqsexo,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -203,8 +198,8 @@ public class PessoaController {
 
 			}else 
 			{ /*Busca todos*/
-			Iterable<Pessoa> iterator = pessoaRepository.findAll();
-			for (Pessoa pessoa : iterator) {
+				
+			for (Pessoa pessoa : pessoaRepository.findAll(PageRequest.of(0, 5, Sort.by("nome")))) {
 				pessoas.add(pessoa);
 			}
 		}

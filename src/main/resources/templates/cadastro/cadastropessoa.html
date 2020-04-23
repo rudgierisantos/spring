@@ -215,7 +215,8 @@ form input[type=submit] {
 								th:text="${pessoa.nome}"></span></a></td>
 						<td th:text="${pessoa.sobrenome}"></td>
 						<td><a
-							th:href="@{/baixarcurriculo/{idpessoa}(idpessoa=${pessoa.id})}">Download</a></td>
+							th:if = "${pessoa.curriculo != null}" th:href="@{/baixarcurriculo/{idpessoa}(idpessoa=${pessoa.id})}">Download</a>
+						 <a th:if="${pessoa.curriculo == null}" style= "color: red;" >Não Disponivel</a></td>
 						<td><a
 							th:href="@{/editarpessoa/{idpessoa}(idpessoa=${pessoa.id})}">Editar</a></td>
 						<td><a
